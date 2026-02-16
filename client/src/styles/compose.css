@@ -1,0 +1,59 @@
+/********* compose page *********/
+
+.cp-container {
+  max-width: 800px;
+  margin: 30px auto;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid #dedede;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.cp-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.cp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cp-input,
+.cp-file,
+.cp-textarea {
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+.cp-input:focus,
+.cp-textarea:focus {
+  border-color: #3a7afe;
+}
+
+.cp-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.cp-btn {
+  background: #3a7afe;
+  color: white;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 120px;
+}
+
+.cp-btn:hover {
+  background: #2466f5;
+}

@@ -1,0 +1,84 @@
+/* Wrapper */
+.reg-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+/* Card */
+.reg-card {
+  width: 100%;
+  max-width: 380px;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 10px;
+  border: 1px solid #e3e3e3;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Title */
+.reg-title {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Form Layout */
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Input */
+.reg-input {
+  border: 1px solid #cfcfcf;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 15px;
+  outline: none;
+}
+
+.reg-input:focus {
+  border-color: #3a7afe;
+}
+
+/* Button */
+.reg-button {
+  background: #3a7afe;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  font-size: 16px;
+}
+
+.reg-button:hover {
+  background: #2564ec;
+}
+
+/* Error Text */
+.reg-error {
+  color: #d93025;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+/* Footer Text */
+.reg-bottom {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+/* Link */
+.reg-link {
+  color: #2457ea;
+  text-decoration: none;
+}
+
+.reg-link:hover {
+  text-decoration: underline;
+}

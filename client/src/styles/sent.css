@@ -1,0 +1,44 @@
+.sent-wrapper {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 10px;
+}
+
+.sent-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.sent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sent-item {
+  display: block;
+  background: #ffffff;
+  border: 1px solid #e3e3e3;
+  padding: 14px;
+  border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sent-item:hover {
+  background: #eef2ff;
+}
+
+.sent-subject {
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #111;
+}
+
+.sent-meta {
+  font-size: 14px;
+  color: #555;
+}

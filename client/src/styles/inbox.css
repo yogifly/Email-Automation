@@ -1,0 +1,152 @@
+/* ===== LAYOUT ===== */
+
+.ib-layout {
+  display: flex;
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
+/* ===== SIDEBAR ===== */
+
+.ib-sidebar {
+  width: 220px;
+  background: #fafbff;
+  border-right: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  height: fit-content;
+}
+
+.ib-side-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.ib-side-item {
+  padding: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 15px;
+  border: 1px solid transparent;
+  transition: 0.2s;
+}
+
+.ib-side-item:hover {
+  background: #e9eefc;
+}
+
+.ib-side-item.active {
+  background: #d5e1ff;
+  border-color: #8db3ff;
+  font-weight: 600;
+}
+
+/* Priority coloring inside sidebar */
+.ib-critical {
+  color: #b30000;
+}
+.ib-high {
+  color: #c97d00;
+}
+.ib-medium {
+  color: #1454b5;
+}
+.ib-low {
+  color: #137a1c;
+}
+.ib-spam {
+  color: #555;
+}
+
+/* ===== MAIN MAIL LIST ===== */
+
+.ib-container {
+  flex: 1;
+  padding: 0 20px;
+}
+
+.ib-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Message Card */
+
+.ib-item {
+  display: block;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #ffffff;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  text-decoration: none;
+  color: black;
+}
+
+.ib-item:hover {
+  background: #e7f0ff;
+}
+
+.ib-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.ib-subject {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Priority pill */
+.ib-pill {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+  display: inline-block;
+}
+
+/* Badge colors */
+.ib-pill.ib-critical {
+  background: #ffcccc;
+  color: #910000;
+}
+
+.ib-pill.ib-high {
+  background: #ffe4b5;
+  color: #a06a00;
+}
+
+.ib-pill.ib-medium {
+  background: #cce3ff;
+  color: #00529e;
+}
+
+.ib-pill.ib-low {
+  background: #c9f5d1;
+  color: #0a7720;
+}
+
+.ib-pill.ib-spam {
+  background: #e4e4e4;
+  color: #444;
+}
+
+.ib-meta,
+.ib-meta-category {
+  font-size: 13px;
+  color: #656565;
+  margin-top: 4px;
+}
+
+/* Empty state */
+
+.ib-empty {
+  padding: 6px 0;
+  font-size: 14px;
+  color: #777;
+}

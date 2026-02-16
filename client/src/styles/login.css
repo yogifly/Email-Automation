@@ -1,0 +1,77 @@
+/********* login page styles *********/
+
+.lg-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.lg-card {
+  width: 100%;
+  max-width: 360px;
+  background: #ffffff;
+  padding: 28px;
+  border-radius: 10px;
+  border: 1px solid #dedede;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+}
+
+.lg-title {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+.lg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.lg-input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #c9c9c9;
+  font-size: 15px;
+  outline: none;
+}
+
+.lg-input:focus {
+  border-color: #4a83ff;
+}
+
+.lg-error {
+  color: #d80032;
+  font-size: 14px;
+  text-align: center;
+}
+
+.lg-btn {
+  background: #3a7afe;
+  color: white;
+  padding: 10px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.lg-btn:hover {
+  background: #2466f5;
+}
+
+.lg-footer {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 14px;
+}
+
+.lg-link {
+  color: #3a7afe;
+  text-decoration: none;
+}
+
+.lg-link:hover {
+  text-decoration: underline;
+}

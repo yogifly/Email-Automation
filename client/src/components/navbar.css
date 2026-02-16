@@ -1,0 +1,52 @@
+.nv-wrapper {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e1e1e1;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: "Inter", sans-serif;
+}
+
+.nv-brand {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2556d9;
+}
+
+.nv-menu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nv-item {
+  text-decoration: none;
+  color: #444;
+  font-size: 15px;
+}
+
+.nv-item:hover {
+  color: #2556d9;
+}
+
+.nv-username {
+  font-size: 14px;
+  color: #666;
+  margin-right: 10px;
+}
+
+.nv-logout {
+  background: #e74c3c;
+  border: none;
+  padding: 6px 12px;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.nv-logout:hover {
+  background: #c0392b;
+}
