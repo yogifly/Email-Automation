@@ -5,8 +5,11 @@ from .routers import auth_routes
 from fastapi import Depends
 from .deps import get_current_user
 from .routers import message_routes
+from app.utils.ws_manager import manager
+from fastapi import WebSocket, WebSocketDisconnect
+from app.routers.calendar_routes import router as calendar_router
 app = FastAPI(title="Internal Mail API")
-
+app.include_router(calendar_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -30,3 +33,12 @@ app.include_router(message_routes.router)
 @app.get("/secure")
 async def secure_route(current=Depends(get_current_user)):
     return {"user": current}
+
+@app.websocket("/ws/{username}")
+async def websocket_endpoint(websocket: WebSocket, username: str):
+    await manager.connect(username, websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(username)

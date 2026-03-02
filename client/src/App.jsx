@@ -9,6 +9,18 @@ import Compose from "./components/Compose";
 import MessageView from "./components/MessageView";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import Calendar from "./components/Calendar";
+import CalendarSuggestions from "./components/CalendarSuggestions";
+const username = localStorage.getItem("me");
+
+const socket = new WebSocket(`ws://localhost:8000/ws/${username}`);
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === "event_suggestion") {
+    alert(`📅 Event detected: ${data.title}`);
+  }
+};
 
 export default function App() {
   const [me, setMe] = React.useState(localStorage.getItem("me"));
@@ -73,6 +85,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MessageView />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calendar/suggestions"
+            element={
+              <ProtectedRoute>
+                <CalendarSuggestions />
               </ProtectedRoute>
             }
           />

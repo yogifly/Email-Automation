@@ -15,7 +15,8 @@ export default function Navbar({ me, onLogout }) {
           <NavLink className="nv-item" to="/folder/low">Low</NavLink>
           <NavLink className="nv-item" to="/folder/spam">Spam</NavLink>
 
-          <NavLink className="nv-item" to="/sent">Sent</NavLink>
+          <NavLink className="nv-item" to="/sent">Sent</NavLink><NavLink to="/calendar">Calendar</NavLink>
+          <NavLink to="/calendar/suggestions">Suggestions</NavLink>
           <NavLink className="nv-item" to="/compose">Compose</NavLink>
 
           <span className="nv-username">{me}</span>

@@ -29,3 +29,25 @@ async def init_indexes():
             ("created_at", pymongo.ASCENDING),
         ]
     )
+    # Add inside init_indexes()
+
+    # Calendar Suggestions Index
+    await db.event_suggestions.create_index(
+        [
+            ("owner", pymongo.ASCENDING),
+            ("status", pymongo.ASCENDING),
+            ("created_at", pymongo.DESCENDING),
+        ]
+    )
+
+    # Calendar Events Index
+    await db.events.create_index(
+        [
+            ("owner", pymongo.ASCENDING),
+            ("event_time", pymongo.ASCENDING),
+        ]
+    )
+    await db.event_suggestions.create_index(
+    [("owner", 1), ("message_id", 1)],
+    unique=True
+)

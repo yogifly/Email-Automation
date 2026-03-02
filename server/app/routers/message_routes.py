@@ -9,6 +9,9 @@ from ..deps import get_current_user
 from ..database import db
 from ..models.message import MessageCreate
 from app.ml import predict_spam, predict_priority, predict_subject
+from app.utils.ws_manager import manager
+from app.email_parser import extract_event_datetime
+from datetime import datetime
 
 router = APIRouter(prefix="/messages", tags=["messages"])
 
@@ -144,6 +147,40 @@ async def send_message(
     }
 
     res = await db.messages.insert_one(msg)
+    message_id = str(res.inserted_id)
+
+    # ================= EVENT SUGGESTION LOGIC =================
+
+    # Extract once (same content for all recipients)
+    event_time = extract_event_datetime(subject, body)
+
+    if event_time:
+        for recipient in rec_list:
+
+            # 🔥 ADD THIS BLOCK HERE
+            existing = await db.event_suggestions.find_one({
+                "owner": recipient,
+                "message_id": message_id
+            })
+
+            suggestion = {
+                "owner": recipient,
+                "message_id": message_id,
+                "title": subject,
+                "description": body,
+                "suggested_time": event_time,
+                "status": "pending",
+                "created_at": datetime.utcnow()
+            }
+
+            result = await db.event_suggestions.insert_one(suggestion)
+
+            manager.notify_user(recipient, {
+                "type": "event_suggestion",
+                "suggestion_id": str(result.inserted_id),
+                "title": subject,
+                "time": event_time.isoformat()
+            })
 
     return {
         "id": str(res.inserted_id),
