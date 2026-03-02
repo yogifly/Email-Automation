@@ -1,18 +1,29 @@
-from fastapi import APIRouter, HTTPException, Depends , Response, UploadFile, File, Form , Body
+from fastapi import APIRouter, HTTPException, Depends, Response, UploadFile, File, Form, Body
 from datetime import datetime
 from bson import ObjectId
+from typing import List, Optional
+from gridfs import GridFS
+import numpy as np
+
 from ..deps import get_current_user
 from ..database import db
 from ..models.message import MessageCreate
-from gridfs import GridFS
-from app.deps import get_current_user
-from typing import List
-import numpy as np
-from app.ml import predict_spam, predict_priority, predict_subject 
-
-
+from app.ml import predict_spam, predict_priority, predict_subject
 
 router = APIRouter(prefix="/messages", tags=["messages"])
+
+# ==============================
+# PRIORITY RANKING (QUEUE LOGIC)
+# ==============================
+
+PRIORITY_RANK = {
+    "critical": 1,
+    "high": 2,
+    "medium": 3,
+    "low": 4,
+    "spam": 5
+}
+
 CATEGORY_MAP = {
     0: "personal",
     1: "promotional",
@@ -20,6 +31,10 @@ CATEGORY_MAP = {
     3: "work"
 }
 
+
+# ==============================
+# SEND MESSAGE (QUEUE ENABLED)
+# ==============================
 
 @router.post("/send")
 async def send_message(
@@ -29,10 +44,9 @@ async def send_message(
     files: List[UploadFile] = File(default=[]),
     current_user: str = Depends(get_current_user)
 ):
-    # --- recipients string → list ---
     rec_list = [r.strip() for r in recipients.split(",") if r.strip()]
 
-    # --- validate recipients exist ---
+    # validate recipients
     unknown = []
     for r in rec_list:
         exists = await db.users.find_one({"username": r})
@@ -45,14 +59,13 @@ async def send_message(
             detail=f"Unknown recipients: {', '.join(unknown)}"
         )
 
-    # === ML CLASSIFICATION ===
+    # ================= ML CLASSIFICATION =================
+
     full_text = f"{subject} {body}"
 
-    # spam
     spam_label = predict_spam(full_text)
     is_spam = spam_label == "spam"
 
-    # defaults
     priority = "low"
     subject_class = None
 
@@ -68,10 +81,8 @@ async def send_message(
             priority = "low"
     else:
         priority = "spam"
-        subject_class = None
 
-
-    # === Convert NP → Python ===
+    # convert numpy → native python
     def to_native(v):
         if isinstance(v, np.generic):
             return v.item()
@@ -80,7 +91,27 @@ async def send_message(
     priority = to_native(priority)
     subject_class = to_native(subject_class)
 
-    # === ATTACHMENTS (must be defined BEFORE use) ===
+    # ================= QUEUE LOGIC =================
+
+    # ================= USER PROFILE ADJUSTMENT =================
+
+    user_profile = await db.users.find_one({"username": current_user})
+
+    priority_boost = 0
+
+    if user_profile:
+        # Example future fields:
+        # user_profile["priority_boost_work"]
+        # user_profile["vip_senders"]
+        # etc.
+        priority_boost = user_profile.get("priority_boost", 0)
+
+    base_rank = PRIORITY_RANK.get(priority, 4)
+
+    priority_rank = max(1, base_rank - priority_boost)
+
+    # ================= ATTACHMENTS =================
+
     fs = GridFS(db.delegate)
     attachments = []
 
@@ -95,13 +126,16 @@ async def send_message(
             "size": len(data)
         })
 
-    # === build DB document ===
+    # ================= BUILD DOCUMENT =================
+
     msg = {
         "sender": current_user,
         "recipients": rec_list,
         "subject": subject,
         "body": body,
         "priority": priority,
+        "queue_priority": priority_rank,       # 🔥 QUEUE FIELD
+        "queue_status": "pending",             # 🔥 QUEUE FIELD
         "subject_class": subject_class,
         "is_spam": bool(is_spam),
         "created_at": datetime.utcnow(),
@@ -115,58 +149,100 @@ async def send_message(
         "id": str(res.inserted_id),
         "status": "sent",
         "priority": priority,
-        "subject_class": subject_class,
-        "spam": is_spam
+        "queue_priority": priority_rank,
+        "queue_status": "pending"
     }
 
-# ✅ Inbox
-@router.get("")
-async def inbox(current_user: str = Depends(get_current_user)):
-    cursor = db.messages.find({"recipients": current_user}).sort("created_at", -1)
+
+# ==============================
+# FILTER (FOLDER SUPPORT)
+# ==============================
+
+@router.get("/filter")
+async def filter_messages(
+    priority: Optional[str] = None,
+    spam: Optional[bool] = None,
+    current_user: str = Depends(get_current_user)
+):
+    query = {"recipients": current_user}
+
+    if priority:
+        query["priority"] = priority
+
+    if spam is not None:
+        query["is_spam"] = spam
+
+    cursor = db.messages.find(query).sort("created_at", -1)
 
     messages = []
     async for doc in cursor:
         doc["id"] = str(doc["_id"])
-        doc.pop("_id", None)     # ✅ remove raw ObjectId
+        doc.pop("_id", None)
         messages.append(doc)
+
     return messages
 
-@router.patch("/{msg_id}/priority")
-async def update_priority(
+
+# ==============================
+# QUEUE: GET NEXT MESSAGE
+# ==============================
+
+@router.get("/queue/next")
+async def get_next_in_queue(current_user: str = Depends(get_current_user)):
+
+    doc = await db.messages.find_one(
+        {
+            "queue_status": "pending",
+            "recipients": current_user  # 🔥 PER-USER FILTER
+        },
+        sort=[("queue_priority", 1), ("created_at", 1)]
+    )
+
+    if not doc:
+        return {"message": "No pending messages"}
+
+    await db.messages.update_one(
+        {"_id": doc["_id"]},
+        {"$set": {"queue_status": "processing"}}
+    )
+
+    doc["id"] = str(doc["_id"])
+    doc.pop("_id", None)
+
+    return doc
+
+
+# ==============================
+# QUEUE: MARK COMPLETE
+# ==============================
+@router.patch("/queue/{msg_id}/complete")
+async def mark_completed(
     msg_id: str,
-    data: dict = Body(...),
     current_user: str = Depends(get_current_user)
 ):
-    new_priority = data.get("new_priority")
-
-    allowed = ["low", "medium", "high", "critical"]
-
-    if new_priority not in allowed:
-        raise HTTPException(400, f"Priority must be: {allowed}")
+    try:
+        _id = ObjectId(msg_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid ID")
 
     result = await db.messages.update_one(
-        {"_id": ObjectId(msg_id)},
-        {"$set": {"priority": new_priority}}
+        {
+            "_id": _id,
+            "recipients": current_user  # 🔥 Ensure user owns it
+        },
+        {"$set": {"queue_status": "completed"}}
     )
 
     if result.matched_count == 0:
-        raise HTTPException(404, "Message not found")
+        raise HTTPException(status_code=404, detail="Message not found")
 
-    # return updated document
-    updated = await db.messages.find_one({"_id": ObjectId(msg_id)})
-    updated["id"] = str(updated["_id"])
-    updated.pop("_id", None)
-
-    return updated
+    return {"status": "completed"}
 
 
+# ==============================
+# SENT
+# ==============================
 
-@router.get("/priority/high")
-async def get_high(current_user: str = Depends(get_current_user)):
-    msgs = await db.messages.find({"recipients": current_user, "priority": "high"}).to_list(None)
-    return clean_ids(msgs)
-
-# ✅ Sent
 @router.get("/sent")
 async def sent(current_user: str = Depends(get_current_user)):
     cursor = db.messages.find({"sender": current_user}).sort("created_at", -1)
@@ -174,12 +250,62 @@ async def sent(current_user: str = Depends(get_current_user)):
     messages = []
     async for doc in cursor:
         doc["id"] = str(doc["_id"])
-        doc.pop("_id", None)     # ✅ remove raw ObjectId
+        doc.pop("_id", None)
         messages.append(doc)
+
     return messages
 
+# ==============================
+# UPDATE PRIORITY (WITH QUEUE UPDATE)
+# ==============================
 
-# ✅ View one message
+@router.patch("/{msg_id}/priority")
+async def update_priority(
+    msg_id: str,
+    data: dict = Body(...),
+    current_user: str = Depends(get_current_user)
+):
+    try:
+        _id = ObjectId(msg_id)
+    except:
+        raise HTTPException(status_code=400, detail="Invalid ID")
+
+    new_priority = data.get("new_priority")
+
+    allowed = ["low", "medium", "high", "critical"]
+
+    if new_priority not in allowed:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Priority must be one of {allowed}"
+        )
+
+    # Update queue priority ranking too
+    new_rank = PRIORITY_RANK.get(new_priority, 4)
+
+    result = await db.messages.update_one(
+        {"_id": _id},
+        {
+            "$set": {
+                "priority": new_priority,
+                "queue_priority": new_rank
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    updated = await db.messages.find_one({"_id": _id})
+    updated["id"] = str(updated["_id"])
+    updated.pop("_id", None)
+
+    return updated
+
+# ==============================
+# GET SINGLE MESSAGE
+# ==============================
+
 @router.get("/{msg_id}")
 async def get_message(msg_id: str, current_user: str = Depends(get_current_user)):
     try:
@@ -195,9 +321,9 @@ async def get_message(msg_id: str, current_user: str = Depends(get_current_user)
         raise HTTPException(status_code=403, detail="Not allowed")
 
     doc["id"] = str(doc["_id"])
-    doc.pop("_id", None)   # ✅ remove raw ObjectId
-    return doc
+    doc.pop("_id", None)
 
+    return doc
 
 # ✅ Mark as read
 @router.post("/{msg_id}/read")

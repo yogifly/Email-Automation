@@ -39,6 +39,15 @@ export default function App() {
             path="/inbox"
             element={
               <ProtectedRoute>
+                <Inbox type="inbox" />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/folder/:type"
+            element={
+              <ProtectedRoute>
                 <Inbox />
               </ProtectedRoute>
             }

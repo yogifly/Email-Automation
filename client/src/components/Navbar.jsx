@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./navbar.css";
 
 export default function Navbar({ me, onLogout }) {
@@ -8,9 +8,15 @@ export default function Navbar({ me, onLogout }) {
 
       {me && (
         <nav className="nv-menu">
-          <Link className="nv-item" to="/inbox">Inbox</Link>
-          <Link className="nv-item" to="/sent">Sent</Link>
-          <Link className="nv-item" to="/compose">Compose</Link>
+          <NavLink className="nv-item" to="/inbox">Inbox</NavLink>
+          <NavLink className="nv-item" to="/folder/critical">Critical</NavLink>
+          <NavLink className="nv-item" to="/folder/high">High</NavLink>
+          <NavLink className="nv-item" to="/folder/medium">Medium</NavLink>
+          <NavLink className="nv-item" to="/folder/low">Low</NavLink>
+          <NavLink className="nv-item" to="/folder/spam">Spam</NavLink>
+
+          <NavLink className="nv-item" to="/sent">Sent</NavLink>
+          <NavLink className="nv-item" to="/compose">Compose</NavLink>
 
           <span className="nv-username">{me}</span>
 

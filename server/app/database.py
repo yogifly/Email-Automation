@@ -19,3 +19,13 @@ async def init_indexes():
     await db.messages.create_index(
         [("subject", "text"), ("body", "text")]
     )
+
+    # 🔥 NEW: Per-User Priority Queue Index
+    await db.messages.create_index(
+        [
+            ("recipients", pymongo.ASCENDING),
+            ("queue_status", pymongo.ASCENDING),
+            ("queue_priority", pymongo.ASCENDING),
+            ("created_at", pymongo.ASCENDING),
+        ]
+    )
