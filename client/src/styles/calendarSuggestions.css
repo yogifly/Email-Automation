@@ -1,0 +1,145 @@
+/* container */
+
+.bm-suggest-container{
+  min-height:100vh;
+  background:var(--bm-black);
+  padding:60px 20px;
+  display:flex;
+  justify-content:center;
+}
+
+/* card */
+
+.bm-suggest-card{
+  width:900px;
+  background:#0d1117;
+  border:1px solid var(--bm-border);
+  border-radius:8px;
+  padding:35px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6);
+}
+
+/* title */
+
+.bm-suggest-title{
+  font-size:1.5rem;
+  margin-bottom:30px;
+  font-weight:800;
+
+  background:linear-gradient(
+    135deg,
+    var(--bm-saffron),
+    var(--bm-gold)
+  );
+
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* empty state */
+
+.bm-suggest-empty{
+  text-align:center;
+  color:var(--bm-muted);
+  font-size:0.9rem;
+}
+
+/* list */
+
+.bm-suggest-list{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* suggestion item */
+
+.bm-suggest-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  background:#080b10;
+  border:1px solid var(--bm-border);
+  border-radius:6px;
+
+  padding:18px;
+}
+
+/* info */
+
+.bm-suggest-event{
+  font-size:0.95rem;
+  font-weight:700;
+  color:var(--bm-white);
+}
+
+.bm-suggest-time{
+  font-size:0.8rem;
+  color:var(--bm-muted);
+}
+
+/* actions */
+
+.bm-suggest-actions{
+  display:flex;
+  gap:8px;
+}
+
+/* accept button */
+
+.bm-suggest-accept{
+  padding:8px 14px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:0.8rem;
+  font-weight:700;
+
+  background:linear-gradient(
+    135deg,
+    var(--bm-saffron),
+    var(--bm-gold)
+  );
+
+  color:var(--bm-black);
+}
+
+.bm-suggest-accept:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(255,107,26,0.35);
+}
+
+/* reject button */
+
+.bm-suggest-reject{
+  padding:8px 14px;
+  border:1px solid var(--bm-border);
+  background:transparent;
+  color:var(--bm-muted);
+  border-radius:4px;
+  cursor:pointer;
+  font-size:0.8rem;
+}
+
+.bm-suggest-reject:hover{
+  border-color:#ff4d4d;
+  color:#ff4d4d;
+}
+
+/* responsive */
+
+@media (max-width:768px){
+
+  .bm-suggest-card{
+    width:100%;
+    padding:25px;
+  }
+
+  .bm-suggest-item{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+  }
+
+}

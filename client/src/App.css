@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bm-black: #060608;
+  --bm-white: #F5F2EC;
+  --bm-saffron: #FF6B1A;
+  --bm-gold: #D4A843;
+  --bm-teal: #1ABFB8;
+  --bm-navy: #0D1B2A;
+  --bm-muted: #8A8580;
+  --bm-card: #0F1723;
+  --bm-border: rgba(212, 168, 67, 0.2);
+  --bm-font-display: 'Syne', sans-serif;
+  --bm-font-mono: 'DM Mono', monospace;
+  --bm-font-serif: 'Instrument Serif', serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bm-black);
+  color: var(--bm-white);
+  font-family: var(--bm-font-display);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+.bm-app {
+  position: relative;
+}
+
+/* Custom cursor */
+body::before {
+  content: '';
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  background: var(--bm-saffron);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bm-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bm-saffron);
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--bm-saffron);
+  color: var(--bm-black);
+}

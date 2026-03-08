@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api";
-import "../styles/register.css";   // ✅ import
+import "../styles/register.css";
 
 export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+
     try {
       await api.post("/auth/register", { username, password });
       navigate("/login");
@@ -20,13 +22,24 @@ export default function Register() {
   };
 
   return (
-    <div className="reg-wrapper">
-      <div className="reg-card">
-        <h2 className="reg-title">Create Account</h2>
+    <div className="bm-register-container">
 
-        <form onSubmit={handleRegister} className="reg-form">
+      <div className="bm-register-glow"></div>
+
+      <div className="bm-register-card">
+
+        <h2 className="bm-register-title">
+          Create Account
+        </h2>
+
+        <p className="bm-register-subtitle">
+          Join BharatMail and experience an intelligent inbox
+        </p>
+
+        <form onSubmit={handleRegister} className="bm-register-form">
+
           <input
-            className="reg-input"
+            className="bm-register-input"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -34,26 +47,31 @@ export default function Register() {
 
           <input
             type="password"
-            className="reg-input"
+            className="bm-register-input"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          {error && <p className="reg-error">{error}</p>}
+          {error && (
+            <p className="bm-register-error">{error}</p>
+          )}
 
-          <button type="submit" className="reg-button">
-            Register
+          <button type="submit" className="bm-register-btn">
+            Create Account
           </button>
+
         </form>
 
-        <p className="reg-bottom">
-          Already have an account?{" "}
-          <Link className="reg-link" to="/login">
+        <p className="bm-register-footer">
+          Already have an account?
+          <Link to="/login" className="bm-register-link">
             Login
           </Link>
         </p>
+
       </div>
+
     </div>
   );
 }

@@ -1,0 +1,99 @@
+/* container */
+
+.bm-calendar-container{
+  min-height:100vh;
+  background:var(--bm-black);
+  padding:60px 20px;
+  display:flex;
+  justify-content:center;
+}
+
+/* card */
+
+.bm-calendar-card{
+  width:1100px;
+  background:#0d1117;
+  border:1px solid var(--bm-border);
+  border-radius:8px;
+  padding:35px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6);
+}
+
+/* title */
+
+.bm-calendar-title{
+  font-size:1.5rem;
+  margin-bottom:25px;
+  font-weight:800;
+
+  background:linear-gradient(
+      135deg,
+      var(--bm-saffron),
+      var(--bm-gold)
+  );
+
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* ===== FullCalendar Dark Theme ===== */
+
+.fc{
+  color:var(--bm-white);
+}
+
+/* toolbar */
+
+.fc-toolbar-title{
+  font-size:1.2rem;
+  font-weight:700;
+}
+
+.fc-button{
+  background:#080b10 !important;
+  border:1px solid var(--bm-border) !important;
+  color:var(--bm-white) !important;
+}
+
+.fc-button:hover{
+  border-color:var(--bm-saffron) !important;
+  color:var(--bm-gold) !important;
+}
+
+/* today highlight */
+
+.fc-day-today{
+  background:rgba(255,107,26,0.08) !important;
+}
+
+/* event style */
+
+.fc-event{
+  background:linear-gradient(
+      135deg,
+      var(--bm-saffron),
+      var(--bm-gold)
+  ) !important;
+
+  border:none !important;
+  font-size:0.75rem;
+  padding:2px 4px;
+}
+
+/* grid lines */
+
+.fc-theme-standard td,
+.fc-theme-standard th{
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+/* responsive */
+
+@media (max-width:768px){
+
+  .bm-calendar-card{
+    width:100%;
+    padding:25px;
+  }
+
+}

@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-groq
-python-dotenv
-numpy
-scikit-learn
-textstat
-rapidfuzz

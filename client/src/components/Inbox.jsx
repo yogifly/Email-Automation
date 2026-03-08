@@ -27,39 +27,63 @@ export default function Inbox({ type }) {
 
       const { data } = await api.get(url);
       setItems(data);
+
     } catch (err) {
       console.error("Inbox load failed", err);
     }
   };
 
   return (
-    <div className="ib-container">
-      <h2 className="ib-title">{folder.toUpperCase()}</h2>
+    <div className="bm-inbox-container">
 
-      {items.length === 0 && (
-        <p className="ib-empty">No messages.</p>
-      )}
+      <div className="bm-inbox-card">
 
-      {items.map((m) => (
-        <Link key={m.id} to={`/message/${m.id}`} className="ib-item">
-          <div className="ib-top">
-            <span className="ib-subject">
-              {m.subject || "(no subject)"}
-            </span>
-            <span className={`ib-pill ib-${m.priority}`}>
-              {m.priority}
-            </span>
-          </div>
+        <h2 className="bm-inbox-title">
+          {folder.toUpperCase()}
+        </h2>
 
-          <div className="ib-meta">
-            From: <b>{m.sender}</b>
-          </div>
+        {items.length === 0 && (
+          <p className="bm-inbox-empty">
+            No messages found
+          </p>
+        )}
 
-          <div className="ib-meta-category">
-            Category: <b>{m.subject_class ?? "N/A"}</b>
-          </div>
-        </Link>
-      ))}
+        <div className="bm-inbox-list">
+
+          {items.map((m) => (
+            <Link
+              key={m.id}
+              to={`/dashboard/message/${m.id}`}
+              className="bm-inbox-item"
+            >
+
+              <div className="bm-inbox-top">
+
+                <span className="bm-inbox-subject">
+                  {m.subject || "(No subject)"}
+                </span>
+
+                <span className={`bm-inbox-pill bm-inbox-${m.priority}`}>
+                  {m.priority}
+                </span>
+
+              </div>
+
+              <div className="bm-inbox-meta">
+                From: <b>{m.sender}</b>
+              </div>
+
+              <div className="bm-inbox-category">
+                Category: <b>{m.subject_class ?? "N/A"}</b>
+              </div>
+
+            </Link>
+          ))}
+
+        </div>
+
+      </div>
+
     </div>
   );
 }

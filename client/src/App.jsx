@@ -1,28 +1,15 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Login from "./components/Login";
+import Landing from "./pages/Landing";
+import LoginPage from "./pages/LoginPage";
 import Register from "./components/Register";
-import Inbox from "./components/Inbox";
-import Sent from "./components/Sent";
-import Compose from "./components/Compose";
-import MessageView from "./components/MessageView";
+import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
-import Calendar from "./components/Calendar";
-import CalendarSuggestions from "./components/CalendarSuggestions";
-const username = localStorage.getItem("me");
-
-const socket = new WebSocket(`ws://localhost:8000/ws/${username}`);
-
-socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === "event_suggestion") {
-    alert(`📅 Event detected: ${data.title}`);
-  }
-};
+import './App.css'
 
 export default function App() {
+
   const [me, setMe] = React.useState(localStorage.getItem("me"));
 
   React.useEffect(() => {
@@ -32,80 +19,31 @@ export default function App() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
-    window.dispatchEvent(new Event("storage"));
-    window.location.href = "/login";
-  };
+  localStorage.clear();
+  window.dispatchEvent(new Event("storage"));
+  window.location.href = "/";
+};
 
   return (
     <BrowserRouter>
-      <Navbar me={me} onLogout={handleLogout} />
+      <Routes>
 
-      <div className="container">
-        <Routes>
-          <Route path="/" element={<Navigate to={me ? "/inbox" : "/login"} />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Landing />} />
 
-          <Route
-            path="/inbox"
-            element={
-              <ProtectedRoute>
-                <Inbox type="inbox" />
-              </ProtectedRoute>
-            }
-          />
+        <Route path="/login" element={<LoginPage />} />
 
-          <Route
-            path="/folder/:type"
-            element={
-              <ProtectedRoute>
-                <Inbox />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/sent"
-            element={
-              <ProtectedRoute>
-                <Sent />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/compose"
-            element={
-              <ProtectedRoute>
-                <Compose />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/message/:id"
-            element={
-              <ProtectedRoute>
-                <MessageView />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <ProtectedRoute>
-                <Calendar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/calendar/suggestions"
-            element={
-              <ProtectedRoute>
-                <CalendarSuggestions />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </div>
+        <Route path="/register" element={<Register />} />
+
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute>
+              <Dashboard me={me} onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
     </BrowserRouter>
   );
 }

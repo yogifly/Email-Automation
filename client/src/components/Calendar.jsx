@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import "../styles/calender.css";
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -32,20 +33,28 @@ export default function Calendar() {
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>My Calendar</h2>
+    <div className="bm-calendar-container">
 
-      <FullCalendar
-        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
-        events={events}
-        height="80vh"
-        eventClick={(info) => {
-          alert(
-            `${info.event.title}\n\n${info.event.extendedProps.description}`
-          );
-        }}
-      />
+      <div className="bm-calendar-card">
+
+        <h2 className="bm-calendar-title">
+          My Calendar
+        </h2>
+
+        <FullCalendar
+          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          events={events}
+          height="80vh"
+          eventClick={(info) => {
+            alert(
+              `${info.event.title}\n\n${info.event.extendedProps.description}`
+            );
+          }}
+        />
+
+      </div>
+
     </div>
   );
 }

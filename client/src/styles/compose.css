@@ -1,59 +1,133 @@
-/********* compose page *********/
+/* container */
 
-.cp-container {
-  max-width: 800px;
-  margin: 30px auto;
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 8px;
-  border: 1px solid #dedede;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+.bm-compose-container{
+  min-height:100vh;
+  background:var(--bm-black);
+  display:flex;
+  justify-content:center;
+  padding:60px 20px;
 }
 
-.cp-title {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 18px;
+/* card */
+
+.bm-compose-card{
+  width:850px;
+  background:#0d1117;
+  border:1px solid var(--bm-border);
+  border-radius:8px;
+  padding:40px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6);
 }
 
-.cp-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* title */
+
+.bm-compose-title{
+  font-size:1.6rem;
+  margin-bottom:30px;
+  font-weight:800;
+
+  background:linear-gradient(
+    135deg,
+    var(--bm-saffron),
+    var(--bm-gold)
+  );
+
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
-.cp-input,
-.cp-file,
-.cp-textarea {
-  border: 1px solid #cccccc;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 15px;
-  outline: none;
+/* form */
+
+.bm-compose-form{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
 }
 
-.cp-input:focus,
-.cp-textarea:focus {
-  border-color: #3a7afe;
+/* inputs */
+
+.bm-compose-input{
+  padding:12px 14px;
+  border-radius:4px;
+  border:1px solid var(--bm-border);
+  background:#080b10;
+  color:var(--bm-white);
+  font-size:0.9rem;
 }
 
-.cp-textarea {
-  resize: vertical;
-  min-height: 120px;
+.bm-compose-input:focus{
+  outline:none;
+  border-color:var(--bm-saffron);
 }
 
-.cp-btn {
-  background: #3a7afe;
-  color: white;
-  font-size: 15px;
-  font-weight: 500;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  width: 120px;
+/* textarea */
+
+.bm-compose-textarea{
+  padding:14px;
+  border-radius:4px;
+  border:1px solid var(--bm-border);
+  background:#080b10;
+  color:var(--bm-white);
+  font-size:0.9rem;
+  resize:vertical;
+  line-height:1.6;
 }
 
-.cp-btn:hover {
-  background: #2466f5;
+.bm-compose-textarea:focus{
+  outline:none;
+  border-color:var(--bm-saffron);
+}
+
+/* file upload */
+
+.bm-compose-file-row{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.bm-compose-file-label{
+  font-size:0.75rem;
+  color:var(--bm-muted);
+}
+
+.bm-compose-file{
+  color:var(--bm-muted);
+  font-size:0.8rem;
+}
+
+/* button */
+
+.bm-compose-btn{
+  margin-top:10px;
+  padding:12px;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;
+  font-weight:700;
+  font-size:0.9rem;
+
+  background:linear-gradient(
+    135deg,
+    var(--bm-saffron),
+    var(--bm-gold)
+  );
+
+  color:var(--bm-black);
+}
+
+.bm-compose-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(255,107,26,0.35);
+}
+
+/* responsive */
+
+@media (max-width:768px){
+
+  .bm-compose-card{
+    width:100%;
+    padding:25px;
+  }
+
 }

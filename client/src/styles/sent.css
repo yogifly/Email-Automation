@@ -1,44 +1,111 @@
-.sent-wrapper {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 0 10px;
+/* container */
+
+.bm-sent-container{
+  min-height:100vh;
+  background:var(--bm-black);
+  padding:60px 20px;
+  display:flex;
+  justify-content:center;
 }
 
-.sent-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 18px;
+/* card */
+
+.bm-sent-card{
+  width:900px;
+  background:#0d1117;
+  border:1px solid var(--bm-border);
+  border-radius:8px;
+  padding:35px;
+  box-shadow:0 40px 120px rgba(0,0,0,0.6);
 }
 
-.sent-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* title */
+
+.bm-sent-title{
+  font-size:1.5rem;
+  margin-bottom:30px;
+  font-weight:800;
+
+  background:linear-gradient(
+    135deg,
+    var(--bm-saffron),
+    var(--bm-gold)
+  );
+
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
-.sent-item {
-  display: block;
-  background: #ffffff;
-  border: 1px solid #e3e3e3;
-  padding: 14px;
-  border-radius: 8px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s;
+/* empty state */
+
+.bm-sent-empty{
+  text-align:center;
+  color:var(--bm-muted);
+  font-size:0.9rem;
 }
 
-.sent-item:hover {
-  background: #eef2ff;
+/* list */
+
+.bm-sent-list{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
 }
 
-.sent-subject {
-  font-size: 17px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  color: #111;
+/* message item */
+
+.bm-sent-item{
+  display:block;
+  padding:16px 18px;
+  border:1px solid var(--bm-border);
+  border-radius:6px;
+  text-decoration:none;
+  background:#080b10;
+  transition:all 0.2s ease;
 }
 
-.sent-meta {
-  font-size: 14px;
-  color: #555;
+.bm-sent-item:hover{
+  border-color:var(--bm-saffron);
+  transform:translateY(-2px);
+}
+
+/* top row */
+
+.bm-sent-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+
+/* subject */
+
+.bm-sent-subject{
+  font-size:0.9rem;
+  font-weight:700;
+  color:var(--bm-white);
+}
+
+/* meta */
+
+.bm-sent-meta{
+  font-size:0.8rem;
+  color:var(--bm-muted);
+}
+
+/* responsive */
+
+@media (max-width:768px){
+
+  .bm-sent-card{
+    width:100%;
+    padding:25px;
+  }
+
+  .bm-sent-top{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:6px;
+  }
+
 }
