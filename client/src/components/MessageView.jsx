@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
 import "../styles/messageView.css";
+import ResponseEditor from "./ResponseEditor";
 
 export default function MessageView() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [msg, setMsg] = useState(null);
   const [newPriority, setNewPriority] = useState("");
+  const [showReplyEditor, setShowReplyEditor] = useState(false);
+  const me = localStorage.getItem("me");
 
   useEffect(() => {
     load();
@@ -41,12 +45,42 @@ export default function MessageView() {
     }
   };
 
+  const handleGenerateReply = () => {
+    setShowReplyEditor(true);
+  };
+
+  const handleSendReply = async (responseText) => {
+    // Send the reply as a new message
+    try {
+      const form = new FormData();
+      form.append("recipients", msg.sender);
+      form.append("subject", `Re: ${msg.subject || "(No subject)"}`);
+      form.append("body", responseText);
+
+      await api.post("/messages/send", form);
+      
+      alert("Reply sent successfully!");
+      setShowReplyEditor(false);
+      navigate("/dashboard/sent");
+    } catch (err) {
+      console.error("Failed to send reply", err);
+      alert("Failed to send reply");
+    }
+  };
+
+  const handleCancelReply = () => {
+    setShowReplyEditor(false);
+  };
+
   if (!msg)
     return (
       <div className="bm-msg-container">
         <div className="bm-msg-card">Loading...</div>
       </div>
     );
+
+  // Check if current user is a recipient (can reply to received messages)
+  const canReply = msg.recipients.includes(me) && msg.sender !== me;
 
   return (
     <div className="bm-msg-container">
@@ -92,6 +126,30 @@ export default function MessageView() {
             ))}
 
           </div>
+        )}
+
+        {/* AI Reply Section */}
+        {canReply && !showReplyEditor && (
+          <div className="bm-msg-reply-section">
+            <button
+              onClick={handleGenerateReply}
+              className="bm-msg-btn bm-msg-btn-ai"
+            >
+              ✨ Generate AI Reply
+            </button>
+          </div>
+        )}
+
+        {/* Response Editor */}
+        {showReplyEditor && (
+          <ResponseEditor
+            emailId={msg.id}
+            emailSubject={msg.subject}
+            emailBody={msg.body}
+            sender={msg.sender}
+            onSend={handleSendReply}
+            onCancel={handleCancelReply}
+          />
         )}
 
         {/* update priority */}

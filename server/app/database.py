@@ -50,4 +50,31 @@ async def init_indexes():
     await db.event_suggestions.create_index(
     [("owner", 1), ("message_id", 1)],
     unique=True
-)
+    )
+
+    # ========== AI Response Generation Indexes ==========
+
+    # User profiles index
+    await db.user_profiles.create_index("user_id", unique=True)
+
+    # Response history indexes
+    await db.response_history.create_index(
+        [("user_id", pymongo.ASCENDING), ("created_at", pymongo.DESCENDING)]
+    )
+    await db.response_history.create_index(
+        [("user_id", pymongo.ASCENDING), ("original_email_id", pymongo.ASCENDING)]
+    )
+
+    # Training queue index
+    await db.training_queue.create_index(
+        [("user_id", pymongo.ASCENDING), ("status", pymongo.ASCENDING), ("created_at", pymongo.ASCENDING)]
+    )
+
+    # Response drafts index (for queue processing)
+    await db.response_drafts.create_index(
+        [("user_id", pymongo.ASCENDING), ("message_id", pymongo.ASCENDING)],
+        unique=True
+    )
+    await db.response_drafts.create_index(
+        [("user_id", pymongo.ASCENDING), ("status", pymongo.ASCENDING)]
+    )

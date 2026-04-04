@@ -133,6 +133,38 @@
   box-shadow:0 6px 20px rgba(255,107,26,0.35);
 }
 
+/* AI Reply Button */
+
+.bm-msg-reply-section{
+  margin-bottom:30px;
+  padding:20px;
+  background:#080b10;
+  border:1px solid var(--bm-border);
+  border-radius:8px;
+  text-align:center;
+}
+
+.bm-msg-btn-ai{
+  padding:14px 28px;
+  font-size:1rem;
+  background:linear-gradient(
+      135deg,
+      #3b82f6,
+      #8b5cf6
+  );
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition:all 0.2s;
+}
+
+.bm-msg-btn-ai:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 25px rgba(59,130,246,0.4);
+}
+
 /* responsive */
 
 @media (max-width:768px){
