@@ -1,0 +1,40 @@
+# BharatMail Server Dependencies
+
+# Core Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Database
+motor>=3.3.0
+pymongo>=4.6.0
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+bcrypt>=4.1.0
+python-multipart>=0.0.6
+
+# HTTP Client (for Ollama)
+httpx>=0.25.0
+
+# ML - Existing Models
+joblib>=1.3.0
+scikit-learn>=1.3.0
+numpy>=1.24.0
+
+# NLP - Date Parsing
+dateparser>=1.2.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# ============================================
+# Optional: AI Response Generation (GPU)
+# Uncomment below if you have GPU available
+# ============================================
+
+# transformers>=4.36.0
+# peft>=0.7.0
+# torch>=2.1.0
+# accelerate>=0.25.0
+# bitsandbytes>=0.41.0
+# safetensors>=0.4.0

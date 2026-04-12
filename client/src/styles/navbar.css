@@ -76,6 +76,19 @@
   box-shadow:0 6px 20px rgba(255,107,26,0.35);
 }
 
+/* queue button */
+
+.bm-nav-queue{
+  background:linear-gradient(135deg, #8b5cf6, #6366f1);
+  color:white;
+  font-weight:600;
+}
+
+.bm-nav-queue:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(139,92,246,0.35);
+}
+
 /* user section */
 
 .bm-nav-user{

@@ -50,4 +50,64 @@ async def init_indexes():
     await db.event_suggestions.create_index(
     [("owner", 1), ("message_id", 1)],
     unique=True
-)
+    )
+
+    # ========== AI Response Generation Indexes ==========
+
+    # User profiles index
+    await db.user_profiles.create_index("user_id", unique=True)
+
+    # Response history indexes
+    await db.response_history.create_index(
+        [("user_id", pymongo.ASCENDING), ("created_at", pymongo.DESCENDING)]
+    )
+    await db.response_history.create_index(
+        [("user_id", pymongo.ASCENDING), ("original_email_id", pymongo.ASCENDING)]
+    )
+
+    # Training queue index
+    await db.training_queue.create_index(
+        [("user_id", pymongo.ASCENDING), ("status", pymongo.ASCENDING), ("created_at", pymongo.ASCENDING)]
+    )
+
+    # Response drafts indexes (for queue and cache lookups)
+    # Drop old indexes to avoid conflicts
+    try:
+        await db.response_drafts.drop_index("user_id_1_message_id_1")
+    except:
+        pass  # Index doesn't exist, that's fine
+    
+    try:
+        await db.response_drafts.drop_index("user_id_1_email_id_1")
+    except:
+        pass  # Index doesn't exist, that's fine
+    
+    try:
+        await db.response_drafts.drop_index("message_id_1")
+    except:
+        pass  # Index doesn't exist, that's fine
+    
+    # PRIMARY: Unique index on (user_id, email_id) for direct cache lookups
+    # email_id is the primary identifier for drafts
+    await db.response_drafts.create_index(
+        [("user_id", pymongo.ASCENDING), ("email_id", pymongo.ASCENDING)],
+        unique=True
+    )
+    
+    # SECONDARY: Non-unique index on message_id for queue processor lookups
+    # (message_id may be null for new emails not yet synced to messages collection)
+    await db.response_drafts.create_index(
+        [("user_id", pymongo.ASCENDING), ("message_id", pymongo.ASCENDING)],
+        sparse=True  # Sparse to allow multiple nulls
+    )
+    
+    # Status and user lookup
+    await db.response_drafts.create_index(
+        [("user_id", pymongo.ASCENDING), ("status", pymongo.ASCENDING)]
+    )
+    
+    # TTL index for automatic cleanup
+    await db.response_drafts.create_index(
+        [("expires_at", pymongo.ASCENDING)],
+        expireAfterSeconds=0
+    )

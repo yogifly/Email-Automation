@@ -8,8 +8,13 @@ from .routers import message_routes
 from app.utils.ws_manager import manager
 from fastapi import WebSocket, WebSocketDisconnect
 from app.routers.calendar_routes import router as calendar_router
+from app.routers.response_routes import router as response_router
+from app.routers.queue_routes import router as queue_router
+
 app = FastAPI(title="Internal Mail API")
 app.include_router(calendar_router)
+app.include_router(response_router)
+app.include_router(queue_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],

@@ -48,6 +48,10 @@ export default function Navbar({ me, onLogout }) {
             Suggestions
           </NavLink>
 
+          <NavLink className="bm-nav-item bm-nav-queue" to="/dashboard/queue">
+            📬 Queue
+          </NavLink>
+
           <NavLink className="bm-nav-item bm-nav-compose" to="/dashboard/compose">
             Compose
           </NavLink>

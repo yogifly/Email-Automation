@@ -8,6 +8,7 @@ import Compose from "../components/Compose";
 import MessageView from "../components/MessageView";
 import Calendar from "../components/Calendar";
 import CalendarSuggestions from "../components/CalendarSuggestions";
+import QueueProcessor from "../components/QueueProcessor";
 
 export default function Dashboard({ me, onLogout }) {
 
@@ -51,6 +52,8 @@ export default function Dashboard({ me, onLogout }) {
           <Route path="calendar" element={<Calendar />} />
 
           <Route path="calendar/suggestions" element={<CalendarSuggestions />} />
+
+          <Route path="queue" element={<QueueProcessor />} />
 
         </Routes>
       </div>
