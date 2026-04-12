@@ -11,6 +11,7 @@ from app.ai.response_generator import response_generator, ResponseGenerationErro
 from app.ai.learning import learning_service, LearningError
 from app.ai.user_profile import profile_service
 from app.ai.ollama_client import ollama_client, OllamaError
+from app.ai.draft_cache_service import draft_cache_service
 from app.models.response import (
     GenerateResponseRequest,
     GenerateResponseResult,
@@ -30,10 +31,12 @@ router = APIRouter(prefix="/response", tags=["response"])
 @router.post("/generate", response_model=GenerateResponseResult)
 async def generate_response(
     request: GenerateResponseRequest,
-    current_user: str = Depends(get_current_user)
+    current_user: str = Depends(get_current_user),
+    use_cache: bool = True,
+    cache_ttl_days: int = None
 ):
     """
-    Generate a personalized AI response to an email.
+    Generate a personalized AI response to an email with optional caching.
     
     The response is generated based on:
     - The original email content
@@ -41,6 +44,11 @@ async def generate_response(
     - Dynamic prompt conditioning
     
     The generated response is saved to history and can be edited before sending.
+    Responses are cached to avoid regeneration on page reload.
+    
+    Query Parameters:
+    - use_cache: Whether to use cached response (default: true)
+    - cache_ttl_days: Cache time-to-live in days (default: 7)
     """
     try:
         result = await response_generator.generate_response(
@@ -50,7 +58,9 @@ async def generate_response(
             email_body=request.email_body,
             sender=request.sender,
             temperature=request.temperature,
-            max_tokens=request.max_tokens
+            max_tokens=request.max_tokens,
+            use_cache=use_cache,
+            cache_ttl_days=cache_ttl_days
         )
 
         return GenerateResponseResult(
@@ -58,7 +68,8 @@ async def generate_response(
             generated_response=result.generated_response,
             profile_used=result.profile_used,
             original_email_id=result.original_email_id,
-            generation_time_ms=result.generation_time_ms
+            generation_time_ms=result.generation_time_ms,
+            from_cache=result.from_cache
         )
 
     except ResponseGenerationError as e:
@@ -257,3 +268,102 @@ async def pull_ollama_model(model_name: str = None):
         raise HTTPException(status_code=500, detail=f"Failed to pull model: {model}")
 
     return {"status": "pulled", "model": model}
+
+
+# ==================== CACHE MANAGEMENT ====================
+
+@router.post("/cache/save")
+async def save_draft_to_cache(
+    request: GenerateResponseRequest,
+    current_user: str = Depends(get_current_user),
+    cache_ttl_days: int = None
+):
+    """
+    Manually save a draft response to cache.
+    
+    This endpoint allows saving generated or edited responses to cache
+    so they can be retrieved later without regeneration.
+    
+    Call this after:
+    - Generating a response (in ResponseEditor or QueueProcessor)
+    - Editing a response (before sending)
+    
+    Returns:
+    - draft_id: ID of the saved draft in cache
+    """
+    try:
+        draft_id = await draft_cache_service.save_draft(
+            user_id=current_user,
+            email_id=request.email_id,
+            email_subject=request.email_subject,
+            email_body=request.email_body,
+            sender=request.sender,
+            generated_response=request.generated_response,
+            profile_snapshot=None,  # Optional
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+            ttl_days=cache_ttl_days
+        )
+        
+        return {
+            "status": "saved",
+            "draft_id": draft_id,
+            "email_id": request.email_id
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save to cache: {str(e)}")
+
+
+@router.delete("/cache/{email_id}")
+async def invalidate_draft_cache(
+    email_id: str,
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Invalidate cached draft for a specific email.
+    
+    Use this to force regeneration of a response on next request.
+    """
+    success = await draft_cache_service.invalidate_draft(current_user, email_id)
+    
+    if not success:
+        raise HTTPException(status_code=404, detail="No cached draft found for this email")
+    
+    return {"status": "invalidated", "email_id": email_id}
+
+
+@router.get("/cache/stats")
+async def get_cache_stats(
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Get cache statistics for the current user.
+    
+    Returns information about cached drafts, including:
+    - Number of active cached drafts
+    - Number of expired drafts
+    - Total number of cache hits
+    """
+    stats = await draft_cache_service.get_cache_stats(current_user)
+    return {
+        "user_id": current_user,
+        "cache_stats": stats
+    }
+
+
+@router.post("/cache/cleanup")
+async def cleanup_expired_cache(
+    current_user: str = Depends(get_current_user)
+):
+    """
+    Manually clean up expired cached drafts.
+    
+    Note: Expired drafts are automatically cleaned up periodically.
+    This endpoint allows manual cleanup if needed.
+    """
+    deleted_count = await draft_cache_service.cleanup_expired_drafts()
+    return {
+        "status": "cleaned",
+        "expired_drafts_deleted": deleted_count
+    }

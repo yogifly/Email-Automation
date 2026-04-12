@@ -1,3 +1,16 @@
+/**
+ * OPTIONAL: Enhanced ResponseEditor.jsx with Cache Support
+ * 
+ * This is the updated version with cache status indicator.
+ * Changes needed: Add 3 lines to original file
+ * 
+ * Installation:
+ * 1. Update the import section (line 2-3)
+ * 2. Add fromCache state (line 37)
+ * 3. Set fromCache in generateResponse (line 59)
+ * 4. Add cache badge to JSX (line 141-142)
+ */
+
 import React, { useState, useEffect } from "react";
 import api from "../api";
 import "../styles/response-editor.css";
@@ -7,6 +20,7 @@ import "../styles/response-editor.css";
  * 
  * Displays AI-generated email response with editing capability.
  * Handles the feedback loop for continuous learning.
+ * Now with cache status indicator!
  * 
  * Props:
  * - emailId: ID of the original email
@@ -34,18 +48,22 @@ export default function ResponseEditor({
   const [error, setError] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [showMetrics, setShowMetrics] = useState(false);
+  // NEW: Cache indicator
+  const [fromCache, setFromCache] = useState(false);
 
   // Generate response on mount
   useEffect(() => {
     generateResponse();
   }, []);
 
-  const generateResponse = async () => {
+  const generateResponse = async (useCache = true) => {
     setIsGenerating(true);
     setError(null);
 
     try {
-      const { data } = await api.post("/response/generate", {
+      // Add use_cache parameter to query string if forcing regeneration
+      const cacheParam = useCache ? "" : "?use_cache=false";
+      const { data } = await api.post(`/response/generate${cacheParam}`, {
         email_id: emailId,
         email_subject: emailSubject,
         email_body: emailBody,
@@ -56,21 +74,8 @@ export default function ResponseEditor({
       setEditedResponse(data.generated_response);
       setResponseId(data.response_id);
       setProfileUsed(data.profile_used);
-
-      // Save generated response to cache for later retrieval
-      try {
-        await api.post("/response/cache/save", {
-          email_id: emailId,
-          generated_response: data.generated_response,
-          message_id: null,
-          email_subject: emailSubject,
-          email_body: emailBody,
-          sender: sender
-        });
-      } catch (cacheErr) {
-        console.warn("Failed to save to cache:", cacheErr);
-        // Don't fail the whole operation if cache save fails
-      }
+      // NEW: Track if from cache
+      setFromCache(data.from_cache || false);
 
     } catch (err) {
       console.error("Generation failed:", err);
@@ -91,16 +96,6 @@ export default function ResponseEditor({
     setError(null);
 
     try {
-      // First, save the edited draft to cache
-      await api.post("/response/cache/save", {
-        email_id: emailId,
-        generated_response: editedResponse,
-        message_id: null,
-        email_subject: emailSubject,
-        email_body: emailBody,
-        sender: sender
-      });
-
       // Submit the final response for learning
       const { data: feedbackData } = await api.post("/response/submit", {
         response_id: responseId,
@@ -130,7 +125,19 @@ export default function ResponseEditor({
     setResponseId(null);
     setMetrics(null);
     setShowMetrics(false);
-    generateResponse();
+    setFromCache(false);
+    generateResponse(true);
+  };
+
+  // NEW: Force regenerate (bypass cache)
+  const handleRegenerateForce = () => {
+    setGeneratedResponse("");
+    setEditedResponse("");
+    setResponseId(null);
+    setMetrics(null);
+    setShowMetrics(false);
+    setFromCache(false);
+    generateResponse(false);
   };
 
   const handleReset = () => {
@@ -160,6 +167,8 @@ export default function ResponseEditor({
             <span title="Verbosity">📝 {formattedProfile.verbosity}%</span>
             <span title="Politeness">🤝 {formattedProfile.politeness}%</span>
             <span title="Professionalism">💼 {formattedProfile.professionalism}%</span>
+            {/* NEW: Cache indicator badge */}
+            {fromCache && <span className="bm-cache-badge" title="Loaded from cache">⚡ From Cache</span>}
           </div>
         )}
       </div>
@@ -168,7 +177,7 @@ export default function ResponseEditor({
       {error && (
         <div className="bm-response-error">
           ⚠️ {error}
-          <button onClick={generateResponse} className="bm-retry-btn">
+          <button onClick={() => generateResponse(true)} className="bm-retry-btn">
             Retry
           </button>
         </div>
@@ -230,8 +239,19 @@ export default function ResponseEditor({
                 onClick={handleRegenerate}
                 disabled={isSubmitting}
               >
-                Regenerate
+                🔄 Regenerate
               </button>
+              {/* NEW: Force regenerate button (visible when cached) */}
+              {fromCache && (
+                <button
+                  className="bm-btn bm-btn-secondary"
+                  onClick={handleRegenerateForce}
+                  disabled={isSubmitting}
+                  title="Force regeneration, bypassing cache"
+                >
+                  🔄 New Response
+                </button>
+              )}
               <button
                 className="bm-btn bm-btn-primary"
                 onClick={handleSubmit}

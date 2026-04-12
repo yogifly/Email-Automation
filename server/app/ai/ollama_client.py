@@ -15,7 +15,7 @@ class OllamaConfig:
     """Configuration for Ollama client."""
     base_url: str = "http://localhost:11434"
     model: str = "mistral"
-    timeout: float = 120.0  # seconds
+    timeout: float = 300.0  # seconds
     temperature: float = 0.7
     top_p: float = 0.9
     max_tokens: int = 512

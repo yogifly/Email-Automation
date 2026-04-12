@@ -13,6 +13,10 @@ class GenerateResponseRequest(BaseModel):
     email_subject: str = Field(default="", description="Subject of the original email")
     email_body: str = Field(..., description="Body of the original email")
     sender: str = Field(..., description="Sender of the original email")
+    generated_response: Optional[str] = Field(
+        default=None,
+        description="(Optional) Pre-generated response text to save to cache"
+    )
     temperature: Optional[float] = Field(
         default=0.7, 
         ge=0.0, 
@@ -34,6 +38,7 @@ class GenerateResponseResult(BaseModel):
     profile_used: Dict[str, float]
     original_email_id: str
     generation_time_ms: int
+    from_cache: bool = False
 
 
 class SubmitFinalRequest(BaseModel):

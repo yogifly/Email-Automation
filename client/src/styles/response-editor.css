@@ -38,6 +38,17 @@
   cursor: help;
 }
 
+/* Cache indicator badge */
+.bm-cache-badge {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 10px !important;
+  border-radius: 16px;
+  cursor: help;
+  font-weight: 500;
+  border: 1px solid #a7f3d0;
+}
+
 /* Error state */
 .bm-response-error {
   background: #fef2f2;

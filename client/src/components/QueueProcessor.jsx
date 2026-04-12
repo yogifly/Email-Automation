@@ -82,6 +82,21 @@ export default function QueueProcessor() {
     setError(null);
 
     try {
+      // Save edited response to cache before sending
+      try {
+        await api.post("/response/cache/save", {
+          email_id: currentItem.message.id,
+          generated_response: editedResponse,
+          message_id: currentItem.message._id,
+          email_subject: currentItem.message.subject,
+          email_body: currentItem.message.body,
+          sender: currentItem.message.sender
+        });
+      } catch (cacheErr) {
+        console.warn("Failed to save to cache:", cacheErr);
+        // Don't fail the whole operation if cache save fails
+      }
+
       const { data } = await api.post("/queue/confirm-send", {
         draft_id: currentItem.draft.id,
         final_response: editedResponse
@@ -125,8 +140,8 @@ export default function QueueProcessor() {
     }
   };
 
-  // Regenerate response for current message
-  const handleRegenerate = async () => {
+  // Generate or regenerate response for current message
+  const handleGenerateResponse = async () => {
     if (!currentItem?.message?.id) return;
 
     setProcessing(true);
@@ -143,8 +158,25 @@ export default function QueueProcessor() {
           status: "pending"
         }
       }));
+      
+      // Save generated response to cache
+      try {
+        await api.post("/response/cache/save", {
+          email_id: currentItem.message.id,
+          generated_response: data.generated_response,
+          message_id: currentItem.message._id,
+          email_subject: currentItem.message.subject,
+          email_body: currentItem.message.body,
+          sender: currentItem.message.sender
+        });
+      } catch (cacheErr) {
+        console.warn("Failed to save to cache:", cacheErr);
+      }
+
+      setSuccess("Response generated!");
+      setTimeout(() => setSuccess(null), 2000);
     } catch (err) {
-      setError(err.response?.data?.detail || "Regeneration failed");
+      setError(err.response?.data?.detail || "Generation failed");
     } finally {
       setProcessing(false);
     }
@@ -264,39 +296,65 @@ export default function QueueProcessor() {
               )}
             </div>
 
-            <textarea
-              className="bm-response-textarea"
-              value={editedResponse}
-              onChange={(e) => setEditedResponse(e.target.value)}
-              placeholder="Write your response..."
-              rows={8}
-              disabled={processing}
-            />
+            {/* Show textarea only if draft has been generated */}
+            {currentItem.draft?.generated_response && currentItem.draft?.status !== "not_generated" ? (
+              <>
+                <textarea
+                  className="bm-response-textarea"
+                  value={editedResponse}
+                  onChange={(e) => setEditedResponse(e.target.value)}
+                  placeholder="Write your response..."
+                  rows={8}
+                  disabled={processing}
+                />
 
-            {/* Actions */}
-            <div className="bm-queue-actions">
-              <button
-                className="bm-queue-btn bm-btn-skip"
-                onClick={handleSkip}
-                disabled={processing}
-              >
-                Skip
-              </button>
-              <button
-                className="bm-queue-btn bm-btn-regen"
-                onClick={handleRegenerate}
-                disabled={processing}
-              >
-                🔄 Regenerate
-              </button>
-              <button
-                className="bm-queue-btn bm-btn-send"
-                onClick={handleSend}
-                disabled={processing || !editedResponse.trim()}
-              >
-                {processing ? "Sending..." : "✓ Send Reply"}
-              </button>
-            </div>
+                {/* Actions */}
+                <div className="bm-queue-actions">
+                  <button
+                    className="bm-queue-btn bm-btn-skip"
+                    onClick={handleSkip}
+                    disabled={processing}
+                  >
+                    Skip
+                  </button>
+                  <button
+                    className="bm-queue-btn bm-btn-regen"
+                    onClick={handleGenerateResponse}
+                    disabled={processing}
+                  >
+                    🔄 Regenerate
+                  </button>
+                  <button
+                    className="bm-queue-btn bm-btn-send"
+                    onClick={handleSend}
+                    disabled={processing || !editedResponse.trim()}
+                  >
+                    {processing ? "Sending..." : "✓ Send Reply"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Show generate button if no draft exists */
+              <div className="bm-no-draft-message">
+                <p>No response generated yet.</p>
+                <div className="bm-queue-actions">
+                  <button
+                    className="bm-queue-btn bm-btn-skip"
+                    onClick={handleSkip}
+                    disabled={processing}
+                  >
+                    Skip
+                  </button>
+                  <button
+                    className="bm-queue-btn bm-btn-generate-single"
+                    onClick={handleGenerateResponse}
+                    disabled={processing}
+                  >
+                    {processing ? "Generating..." : "✨ Generate Response"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

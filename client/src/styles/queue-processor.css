@@ -323,6 +323,33 @@
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
+/* No Draft Message */
+.bm-no-draft-message {
+  text-align: center;
+  padding: 40px 20px;
+  background: #0a0c10;
+  border: 2px dashed #21262d;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.bm-no-draft-message p {
+  margin: 0 0 20px 0;
+  color: #8b949e;
+  font-size: 1rem;
+}
+
+.bm-btn-generate-single {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: white;
+  width: auto;
+}
+
+.bm-btn-generate-single:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .bm-queue-header {

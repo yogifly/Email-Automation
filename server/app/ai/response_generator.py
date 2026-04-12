@@ -16,6 +16,7 @@ from bson import ObjectId
 from app.database import db
 from app.ai.user_profile import profile_service, UserProfile
 from app.ai.ollama_client import ollama_client, OllamaError
+from app.ai.draft_cache_service import draft_cache_service
 
 
 @dataclass
@@ -26,6 +27,7 @@ class GenerationResult:
     profile_used: Dict[str, float]
     original_email_id: str
     generation_time_ms: int
+    from_cache: bool = False
 
 
 class ResponseGenerator:
@@ -61,6 +63,7 @@ Please write a reply to this email."""
     def __init__(self):
         self.profile_service = profile_service
         self.ollama = ollama_client
+        self.cache = draft_cache_service
 
     async def generate_response(
         self,
@@ -70,10 +73,12 @@ Please write a reply to this email."""
         email_body: str,
         sender: str,
         temperature: float = 0.7,
-        max_tokens: int = 300
+        max_tokens: int = 300,
+        use_cache: bool = True,
+        cache_ttl_days: int = None
     ) -> GenerationResult:
         """
-        Generate a personalized email response.
+        Generate a personalized email response with caching support.
         
         Args:
             user_id: Current user's ID
@@ -83,11 +88,32 @@ Please write a reply to this email."""
             sender: Sender of original email
             temperature: Generation temperature
             max_tokens: Max tokens to generate
+            use_cache: Whether to use cached response if available (default: True)
+            cache_ttl_days: Cache time-to-live in days (default: 7)
             
         Returns:
             GenerationResult with generated response and metadata
         """
         start_time = datetime.utcnow()
+        
+        # Check cache first if enabled
+        if use_cache:
+            cached_draft = await self.cache.get_cached_draft(user_id, email_id)
+            if cached_draft:
+                # Return cached response with from_cache flag
+                gen_time_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                return GenerationResult(
+                    response_id=str(cached_draft["_id"]),
+                    generated_response=cached_draft["generated_response"],
+                    profile_used={
+                        "verbosity": cached_draft["profile_snapshot"]["verbosity"],
+                        "politeness": cached_draft["profile_snapshot"]["politeness"],
+                        "professionalism": cached_draft["profile_snapshot"]["professionalism"]
+                    },
+                    original_email_id=email_id,
+                    generation_time_ms=gen_time_ms,
+                    from_cache=True
+                )
 
         # Load or create user profile
         profile = await self.profile_service.get_or_create_profile(user_id)
@@ -142,6 +168,25 @@ Please write a reply to this email."""
 
         result = await db.response_history.insert_one(response_doc)
         response_id = str(result.inserted_id)
+        
+        # Cache the generated response for future reloads
+        await self.cache.save_draft(
+            user_id=user_id,
+            email_id=email_id,
+            email_subject=email_subject,
+            email_body=email_body,
+            sender=sender,
+            generated_response=generated_text,
+            profile_snapshot={
+                "verbosity": profile.verbosity,
+                "politeness": profile.politeness,
+                "professionalism": profile.professionalism,
+                "avg_response_length": profile.avg_response_length
+            },
+            temperature=temperature,
+            max_tokens=max_tokens,
+            ttl_days=cache_ttl_days
+        )
 
         return GenerationResult(
             response_id=response_id,
@@ -152,7 +197,8 @@ Please write a reply to this email."""
                 "professionalism": profile.professionalism
             },
             original_email_id=email_id,
-            generation_time_ms=gen_time_ms
+            generation_time_ms=gen_time_ms,
+            from_cache=False
         )
 
     def _build_system_prompt(self, profile: UserProfile) -> str:
