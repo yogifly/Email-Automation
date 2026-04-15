@@ -102,13 +102,21 @@ Please write a reply to this email."""
             if cached_draft:
                 # Return cached response with from_cache flag
                 gen_time_ms = int((datetime.utcnow() - start_time).total_seconds() * 1000)
+                
+                # Extract profile_snapshot safely (may be None for old cached entries)
+                profile_snapshot = cached_draft.get("profile_snapshot") or {
+                    "verbosity": 0.5,
+                    "politeness": 0.5,
+                    "professionalism": 0.5
+                }
+                
                 return GenerationResult(
                     response_id=str(cached_draft["_id"]),
                     generated_response=cached_draft["generated_response"],
                     profile_used={
-                        "verbosity": cached_draft["profile_snapshot"]["verbosity"],
-                        "politeness": cached_draft["profile_snapshot"]["politeness"],
-                        "professionalism": cached_draft["profile_snapshot"]["professionalism"]
+                        "verbosity": profile_snapshot.get("verbosity", 0.5),
+                        "politeness": profile_snapshot.get("politeness", 0.5),
+                        "professionalism": profile_snapshot.get("professionalism", 0.5)
                     },
                     original_email_id=email_id,
                     generation_time_ms=gen_time_ms,

@@ -95,6 +95,12 @@ async def send_message(
     subject_class = to_native(subject_class)
 
     # ================= QUEUE LOGIC =================
+    
+    # Only add to queue if NOT a reply email (subject doesn't start with "Re:")
+    is_reply = subject.strip().startswith("Re:") or subject.strip().startswith("re:")
+    
+    # If it's a reply, skip queue (set status to completed)
+    queue_status = "completed" if is_reply else "pending"
 
     # ================= USER PROFILE ADJUSTMENT =================
 
@@ -138,9 +144,10 @@ async def send_message(
         "body": body,
         "priority": priority,
         "queue_priority": priority_rank,       # 🔥 QUEUE FIELD
-        "queue_status": "pending",             # 🔥 QUEUE FIELD
+        "queue_status": queue_status,          # 🔥 QUEUE FIELD (pending or completed)
         "subject_class": subject_class,
         "is_spam": bool(is_spam),
+        "is_reply": is_reply,                  # 🔥 NEW: Track if this is a reply
         "created_at": datetime.utcnow(),
         "read_by": [],
         "attachments": attachments
@@ -187,7 +194,8 @@ async def send_message(
         "status": "sent",
         "priority": priority,
         "queue_priority": priority_rank,
-        "queue_status": "pending"
+        "queue_status": queue_status,
+        "is_reply": is_reply
     }
 
 
@@ -230,7 +238,8 @@ async def get_next_in_queue(current_user: str = Depends(get_current_user)):
     doc = await db.messages.find_one(
         {
             "queue_status": "pending",
-            "recipients": current_user  # 🔥 PER-USER FILTER
+            "recipients": current_user,  # 🔥 PER-USER FILTER
+            "is_reply": {"$ne": True}    # 🔥 Exclude reply emails from queue
         },
         sort=[("queue_priority", 1), ("created_at", 1)]
     )

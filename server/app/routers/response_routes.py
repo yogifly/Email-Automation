@@ -5,7 +5,9 @@ Endpoints for AI email response generation and feedback.
 
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
+from bson import ObjectId
 
+from app.database import db
 from app.deps import get_current_user
 from app.ai.response_generator import response_generator, ResponseGenerationError
 from app.ai.learning import learning_service, LearningError
@@ -93,6 +95,7 @@ async def submit_final_response(
     2. Calculates reward score
     3. Updates user profile based on feedback
     4. Queues for deep learning if needed
+    5. Marks the original email as completed in queue
     
     Call this after the user has reviewed and optionally edited the AI response.
     """
@@ -102,6 +105,22 @@ async def submit_final_response(
             user_id=current_user,
             final_response=request.final_response
         )
+
+        # Get the response history to find the original email
+        response_doc = await db.response_history.find_one(
+            {"_id": ObjectId(request.response_id), "user_id": current_user}
+        )
+        
+        if response_doc and response_doc.get("original_email_id"):
+            # Mark the original email as completed in queue
+            try:
+                await db.messages.update_one(
+                    {"_id": ObjectId(response_doc["original_email_id"])},
+                    {"$set": {"queue_status": "completed"}},
+                    upsert=False
+                )
+            except Exception as e:
+                print(f"Failed to mark message as completed: {e}")
 
         return SubmitFinalResult(
             status="submitted",

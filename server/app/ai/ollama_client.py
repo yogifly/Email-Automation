@@ -6,6 +6,7 @@ Wrapper for Ollama API to interact with local LLM (Mistral).
 import httpx
 import asyncio
 import json
+import os
 from typing import Optional, Dict, Any, AsyncGenerator, List
 from dataclasses import dataclass
 
@@ -13,9 +14,9 @@ from dataclasses import dataclass
 @dataclass
 class OllamaConfig:
     """Configuration for Ollama client."""
-    base_url: str = "http://localhost:11434"
-    model: str = "mistral"
-    timeout: float = 300.0  # seconds
+    base_url: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    model: str = os.getenv("OLLAMA_MODEL", "phi3:mini")
+    timeout: float = 200.0  # seconds
     temperature: float = 0.7
     top_p: float = 0.9
     max_tokens: int = 512

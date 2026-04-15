@@ -2,7 +2,7 @@
 Evaluation Metrics Service
 Computes similarity and quality metrics between generated and final responses.
 
-Metrics:
+Metrics (computed in parallel):
 - Edit distance (normalized)
 - BLEU score
 - ROUGE scores (1, 2, L)
@@ -12,6 +12,7 @@ Metrics:
 
 import re
 import math
+import asyncio
 from typing import Dict, List, Tuple
 from dataclasses import dataclass, asdict
 from collections import Counter
@@ -277,7 +278,14 @@ class EvaluationService:
         final_embedding: List[float] = None
     ) -> EvaluationMetrics:
         """
-        Compute all evaluation metrics between generated and final response.
+        Compute all evaluation metrics between generated and final response IN PARALLEL.
+        
+        Uses asyncio.gather() to compute independent metrics concurrently:
+        - Edit distance
+        - BLEU score
+        - ROUGE-1, ROUGE-2, ROUGE-L scores
+        - Semantic similarity
+        - Readability scores (both texts)
         
         Args:
             generated: AI-generated response
@@ -288,27 +296,41 @@ class EvaluationService:
         Returns:
             EvaluationMetrics object with all scores
         """
-        # Edit distance
-        edit_dist = self.normalized_edit_distance(generated, final)
+        # Run all metric computations in parallel using asyncio.gather()
+        results = await asyncio.gather(
+            # Edit distance computation
+            self._async_normalized_edit_distance(generated, final),
+            
+            # BLEU score computation
+            self._async_bleu_score(final, generated),
+            
+            # ROUGE-1 computation
+            self._async_rouge_n(final, generated, n=1),
+            
+            # ROUGE-2 computation
+            self._async_rouge_n(final, generated, n=2),
+            
+            # ROUGE-L computation
+            self._async_rouge_l(final, generated),
+            
+            # Readability for generated text
+            self._async_flesch_kincaid_grade(generated),
+            
+            # Readability for final text
+            self._async_flesch_kincaid_grade(final),
+            
+            # Semantic similarity
+            self._async_semantic_similarity(generated_embedding, final_embedding),
+            
+            return_exceptions=False
+        )
+        
+        # Unpack results
+        (edit_dist, bleu, r1, r2, rl, read_gen, read_final, semantic_sim) = results
+        
+        # Check for exact match
         zero_edit = generated.strip() == final.strip()
-
-        # BLEU
-        bleu = self.bleu_score(final, generated)
-
-        # ROUGE
-        r1 = self.rouge_n(final, generated, n=1)
-        r2 = self.rouge_n(final, generated, n=2)
-        rl = self.rouge_l(final, generated)
-
-        # Semantic similarity
-        semantic_sim = 0.0
-        if generated_embedding and final_embedding:
-            semantic_sim = self.cosine_similarity(generated_embedding, final_embedding)
-
-        # Readability
-        read_gen = self.flesch_kincaid_grade(generated)
-        read_final = self.flesch_kincaid_grade(final)
-
+        
         return EvaluationMetrics(
             edit_distance=edit_dist,
             zero_edit=zero_edit,
@@ -320,6 +342,74 @@ class EvaluationService:
             readability_generated=read_gen,
             readability_final=read_final
         )
+
+    # ==================== ASYNC WRAPPER METHODS ====================
+    
+    async def _async_normalized_edit_distance(self, generated: str, final: str) -> float:
+        """Async wrapper for normalized edit distance computation."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self.normalized_edit_distance,
+            generated,
+            final
+        )
+    
+    async def _async_bleu_score(self, reference: str, candidate: str) -> float:
+        """Async wrapper for BLEU score computation."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self.bleu_score,
+            reference,
+            candidate
+        )
+    
+    async def _async_rouge_n(self, reference: str, candidate: str, n: int) -> float:
+        """Async wrapper for ROUGE-N computation."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self.rouge_n,
+            reference,
+            candidate,
+            n
+        )
+    
+    async def _async_rouge_l(self, reference: str, candidate: str) -> float:
+        """Async wrapper for ROUGE-L computation."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self.rouge_l,
+            reference,
+            candidate
+        )
+    
+    async def _async_flesch_kincaid_grade(self, text: str) -> float:
+        """Async wrapper for Flesch-Kincaid computation."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            self.flesch_kincaid_grade,
+            text
+        )
+    
+    async def _async_semantic_similarity(
+        self,
+        generated_embedding: List[float],
+        final_embedding: List[float]
+    ) -> float:
+        """Async wrapper for semantic similarity computation."""
+        if generated_embedding and final_embedding:
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(
+                None,
+                self.cosine_similarity,
+                generated_embedding,
+                final_embedding
+            )
+        return 0.0
 
 
 # Singleton instance

@@ -87,11 +87,12 @@ async def init_indexes():
     except:
         pass  # Index doesn't exist, that's fine
     
-    # PRIMARY: Unique index on (user_id, email_id) for direct cache lookups
-    # email_id is the primary identifier for drafts
+    # PRIMARY: Unique sparse index on (user_id, email_id) for direct cache lookups
+    # Sparse allows multiple null values (for queue-based drafts without email_id)
     await db.response_drafts.create_index(
         [("user_id", pymongo.ASCENDING), ("email_id", pymongo.ASCENDING)],
-        unique=True
+        unique=True,
+        sparse=True  # Allow multiple null values
     )
     
     # SECONDARY: Non-unique index on message_id for queue processor lookups

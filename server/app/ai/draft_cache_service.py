@@ -39,6 +39,10 @@ class DraftCacheService:
         Returns:
             Draft document if found and not expired, None otherwise
         """
+        # Skip cache lookup if email_id is None (queue-based drafts)
+        if not email_id:
+            return None
+            
         draft = await db.response_drafts.find_one({
             "user_id": user_id,
             "email_id": email_id,
@@ -77,7 +81,7 @@ class DraftCacheService:
         
         Args:
             user_id: Current user's ID
-            email_id: ID of the original email
+            email_id: ID of the original email (can be None for queue-based responses)
             email_subject: Subject of original email
             email_body: Body of original email
             sender: Sender of original email
@@ -109,7 +113,11 @@ class DraftCacheService:
             "last_accessed_at": datetime.utcnow()
         }
         
-        # Simple upsert without access_count (to avoid conflicts)
+        # Skip upsert if email_id is None (queue-based drafts are managed separately)
+        if not email_id:
+            return ""  # Queue drafts don't use cache storage
+        
+        # Simple upsert for inbox-based drafts
         result = await db.response_drafts.update_one(
             {
                 "user_id": user_id,

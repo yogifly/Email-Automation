@@ -32,11 +32,12 @@ class ResponseQueueService:
         Get user's pending message queue with generated responses.
         Returns messages sorted by priority (critical first).
         """
-        # Get messages from inbox queue
+        # Get messages from inbox queue (exclude replies)
         cursor = db.messages.find({
             "recipients": user_id,
             "queue_status": {"$in": ["pending", "processing"]},
-            "is_spam": False  # Skip spam
+            "is_spam": False,  # Skip spam
+            "is_reply": {"$ne": True}  # 🔥 Exclude reply emails
         }).sort([
             ("queue_priority", 1),  # 1=critical, 5=spam
             ("created_at", 1)       # Oldest first within same priority
@@ -182,11 +183,12 @@ class ResponseQueueService:
         Generate responses for multiple pending messages.
         Processes highest priority messages first.
         """
-        # Get pending messages without drafts
+        # Get pending messages without drafts (exclude replies)
         cursor = db.messages.find({
             "recipients": user_id,
             "queue_status": {"$in": ["pending", "processing"]},
-            "is_spam": False
+            "is_spam": False,
+            "is_reply": {"$ne": True}  # 🔥 Exclude reply emails
         }).sort([
             ("queue_priority", 1),
             ("created_at", 1)
@@ -238,7 +240,7 @@ class ResponseQueueService:
     ) -> dict:
         """
         Confirm a draft response and send it as a reply.
-        Also triggers the learning loop.
+        Also triggers the learning loop and syncs with inbox.
         """
         # Get the draft
         draft = await db.response_drafts.find_one({
@@ -249,10 +251,16 @@ class ResponseQueueService:
         if not draft:
             raise ValueError("Draft not found")
 
-        message_id = draft["message_id"]
+        message_id = draft.get("message_id")
+        email_id = draft.get("email_id")
 
         # Get original message
-        msg = await db.messages.find_one({"_id": ObjectId(message_id)})
+        msg = None
+        if message_id:
+            msg = await db.messages.find_one({"_id": ObjectId(message_id)})
+        elif email_id:
+            msg = await db.messages.find_one({"_id": ObjectId(email_id)})
+            
         if not msg:
             raise ValueError("Original message not found")
 
@@ -280,7 +288,7 @@ class ResponseQueueService:
             "queue_status": "completed",
             "subject_class": "work",
             "is_spam": False,
-            "is_reply_to": message_id,
+            "is_reply_to": message_id or email_id,
             "created_at": datetime.utcnow(),
             "read_by": [],
             "attachments": []
@@ -290,8 +298,9 @@ class ResponseQueueService:
         reply_id = str(result.inserted_id)
 
         # Mark original message as completed in queue
+        original_msg_id = ObjectId(message_id) if message_id else ObjectId(email_id)
         await db.messages.update_one(
-            {"_id": ObjectId(message_id)},
+            {"_id": original_msg_id},
             {"$set": {"queue_status": "completed"}}
         )
 
@@ -311,7 +320,7 @@ class ResponseQueueService:
         return {
             "status": "sent",
             "reply_id": reply_id,
-            "original_message_id": message_id,
+            "original_message_id": message_id or email_id,
             "learning": learning_result.metrics if learning_result else None,
             "reward": learning_result.reward if learning_result else None
         }
