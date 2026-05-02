@@ -57,24 +57,23 @@ export default function Inbox({ type }) {
               className="bm-inbox-item"
             >
 
-              <div className="bm-inbox-top">
+              <div className="bm-inbox-row">
 
-                <span className="bm-inbox-subject">
-                  {m.subject || "(No subject)"}
-                </span>
+                <div className="bm-inbox-sender">
+                  <span className="bm-inbox-sender-name">{m.sender}</span>
+                </div>
 
-                <span className={`bm-inbox-pill bm-inbox-${m.priority}`}>
-                  {m.priority}
-                </span>
+                <div className="bm-inbox-main">
+                  <div className="bm-inbox-subject">{m.subject || "(No subject)"}</div>
+                  <div className="bm-inbox-snippet">{m.body?.slice(0, 120) || ""}</div>
+                </div>
 
-              </div>
+                <div className="bm-inbox-right">
+                  <span className={`bm-inbox-pill bm-inbox-${m.priority}`}>
+                    {m.priority}
+                  </span>
+                </div>
 
-              <div className="bm-inbox-meta">
-                From: <b>{m.sender}</b>
-              </div>
-
-              <div className="bm-inbox-category">
-                Category: <b>{m.subject_class ?? "N/A"}</b>
               </div>
 
             </Link>

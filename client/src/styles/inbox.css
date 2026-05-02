@@ -56,12 +56,12 @@
 
 .bm-inbox-item{
   display:block;
-  padding:16px 18px;
+  padding:10px 12px;
   border:1px solid var(--bm-border);
   border-radius:6px;
   text-decoration:none;
   background:#080b10;
-  transition:all 0.2s ease;
+  transition:all 0.12s ease;
 }
 
 .bm-inbox-item:hover{
@@ -71,17 +71,51 @@
 
 /* top row */
 
-.bm-inbox-top{
+.bm-inbox-row{
   display:flex;
-  justify-content:space-between;
   align-items:center;
-  margin-bottom:6px;
+  gap:12px;
+}
+
+.bm-inbox-sender{
+  width:18%;
+  min-width:110px;
+  color:var(--bm-muted);
+  font-size:0.85rem;
+  overflow:hidden;
+}
+
+.bm-inbox-sender-name{
+  font-weight:700;
+  color:var(--bm-white);
+}
+
+.bm-inbox-main{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+.bm-inbox-snippet{
+  font-size:0.8rem;
+  color:var(--bm-muted);
+  margin-top:6px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.bm-inbox-right{
+  width:12%;
+  min-width:90px;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
 }
 
 /* subject */
 
 .bm-inbox-subject{
-  font-size:0.9rem;
+  font-size:0.95rem;
   font-weight:700;
   color:var(--bm-white);
 }
@@ -135,13 +169,20 @@
 
   .bm-inbox-card{
     width:100%;
-    padding:25px;
+    padding:20px;
   }
 
-  .bm-inbox-top{
+  .bm-inbox-row{
     flex-direction:column;
     align-items:flex-start;
-    gap:6px;
+    gap:8px;
+  }
+
+  .bm-inbox-sender, .bm-inbox-right{
+    width:100%;
+    min-width:0;
+    display:flex;
+    justify-content:space-between;
   }
 
 }
