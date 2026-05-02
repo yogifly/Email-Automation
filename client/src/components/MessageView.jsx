@@ -72,6 +72,33 @@ export default function MessageView() {
     setShowReplyEditor(false);
   };
 
+  const handleAttachmentClick = async (event, attachment) => {
+    event.preventDefault();
+
+    try {
+      const { data, headers } = await api.get(
+        `/messages/${msg.id}/attachments/${attachment.file_id}`,
+        { responseType: "blob" }
+      );
+
+      const blob = new Blob([data], { type: headers["content-type"] || attachment.content_type || "application/octet-stream" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = attachment.filename || "attachment";
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to open attachment", err);
+      alert("Could not open attachment. Please make sure you are logged in.");
+    }
+  };
+
   if (!msg)
     return (
       <div className="bm-msg-container">
@@ -116,9 +143,8 @@ export default function MessageView() {
             {msg.attachments.map((a) => (
               <a
                 key={a.file_id}
-                href={`http://localhost:8000/messages/${msg.id}/attachments/${a.file_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/messages/${msg.id}/attachments/${a.file_id}`}
+                onClick={(event) => handleAttachmentClick(event, a)}
                 className="bm-msg-file"
               >
                 {a.filename}
