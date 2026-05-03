@@ -114,20 +114,49 @@ export default function MessageView() {
 
       <div className="bm-msg-card">
 
-        <h2 className="bm-msg-title">
-          {msg.subject || "(No subject)"}
-        </h2>
+        {/* Email Header */}
+        <div className="bm-msg-header">
+          <h2 className="bm-msg-title">
+            {msg.subject || "(No subject)"}
+          </h2>
 
-        {/* metadata */}
-        <div className="bm-msg-meta">
+          <div className="bm-msg-header-row">
+            <div className="bm-msg-from">
+              <span className="bm-msg-label">From:</span>
+              <span className="bm-msg-value">{msg.sender}</span>
+            </div>
+          </div>
 
-          <div><b>From:</b> {msg.sender}</div>
-          <div><b>To:</b> {msg.recipients.join(", ")}</div>
-          <div><b>Priority:</b> {msg.priority}</div>
-          <div><b>Category:</b> {msg.subject_class ?? "N/A"}</div>
-          <div><b>Spam:</b> {msg.is_spam ? "Yes" : "No"}</div>
+          <div className="bm-msg-header-row">
+            <div className="bm-msg-to">
+              <span className="bm-msg-label">To:</span>
+              <span className="bm-msg-value">{msg.recipients.join(", ")}</span>
+            </div>
+          </div>
 
+          {/* metadata row */}
+          <div className="bm-msg-metadata-row">
+            <div className="bm-msg-meta-item">
+              <span className="bm-msg-label">Priority:</span>
+              <span className={`bm-msg-priority bm-priority-${msg.priority}`}>
+                {msg.priority}
+              </span>
+            </div>
+            <div className="bm-msg-meta-item">
+              <span className="bm-msg-label">Category:</span>
+              <span className="bm-msg-value">{msg.subject_class ?? "N/A"}</span>
+            </div>
+            <div className="bm-msg-meta-item">
+              <span className="bm-msg-label">Spam:</span>
+              <span className={`bm-msg-spam ${msg.is_spam ? 'bm-spam-yes' : 'bm-spam-no'}`}>
+                {msg.is_spam ? "Yes" : "No"}
+              </span>
+            </div>
+          </div>
         </div>
+
+        {/* Divider */}
+        <div className="bm-msg-divider"></div>
 
         {/* body */}
         <div className="bm-msg-body">

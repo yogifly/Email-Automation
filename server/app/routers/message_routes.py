@@ -8,9 +8,9 @@ import numpy as np
 from ..deps import get_current_user
 from ..database import db
 from ..models.message import MessageCreate
-from app.ml import predict_spam, predict_priority, predict_subject
-from app.utils.ws_manager import manager
-from app.email_parser import extract_event_datetime
+from ..ml import predict_spam, predict_priority, predict_subject
+from ..utils.ws_manager import manager
+from ..email_parser import extract_event_datetime
 from datetime import datetime
 
 router = APIRouter(prefix="/messages", tags=["messages"])

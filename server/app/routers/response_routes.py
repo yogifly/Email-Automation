@@ -7,14 +7,14 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from bson import ObjectId
 
-from app.database import db
-from app.deps import get_current_user
-from app.ai.response_generator import response_generator, ResponseGenerationError
-from app.ai.learning import learning_service, LearningError
-from app.ai.user_profile import profile_service
-from app.ai.ollama_client import ollama_client, OllamaError
-from app.ai.draft_cache_service import draft_cache_service
-from app.models.response import (
+from ..database import db
+from ..deps import get_current_user
+from ..ai.response_generator import response_generator, ResponseGenerationError
+from ..ai.learning import learning_service, LearningError
+from ..ai.user_profile import profile_service
+from ..ai.ollama_client import ollama_client, OllamaError
+from ..ai.draft_cache_service import draft_cache_service
+from ..models.response import (
     GenerateResponseRequest,
     GenerateResponseResult,
     SubmitFinalRequest,

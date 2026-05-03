@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-from app.deps import get_current_user
-from app.ai.response_queue import response_queue_service
+from ..deps import get_current_user
+from ..ai.response_queue import response_queue_service
 
 
 router = APIRouter(prefix="/queue", tags=["queue"])
