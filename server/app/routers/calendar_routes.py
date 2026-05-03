@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from bson import ObjectId
 from datetime import datetime
-from app.database import db
-from app.deps import get_current_user
+from ..database import db
+from ..deps import get_current_user
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
